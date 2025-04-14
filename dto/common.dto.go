@@ -23,6 +23,7 @@ var (
 	ErrOpenFile            = errors.New("failed to open file")
 	ErrUnmarshalJSON       = errors.New("failed to unmarshal json")
 	ErrUnsupportedFileType = errors.New("unsupported file type")
+	ErrFileTooLarge        = errors.New("file too large")
 )
 
 type (

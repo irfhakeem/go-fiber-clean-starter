@@ -25,6 +25,8 @@ const (
 var (
 	ErrUserNotFound      = errors.New("user not found")
 	ErrUserAlreadyExists = errors.New("user already exists")
+	ErrUpdateUser        = errors.New("failed to update user")
+	ErrDeleteUser        = errors.New("failed to delete user")
 )
 
 type (
@@ -54,6 +56,6 @@ type (
 		Name     string                `json:"name" form:"name" validate:"omitempty"`
 		Password string                `json:"password" form:"password" validate:"omitempty"`
 		Gender   constants.Gender      `json:"gender" form:"password" validate:"omitempty"`
-		Avatar   *multipart.FileHeader `json:"avatar" form:"avatar" validate:"omitempty"`
+		Avatar   *multipart.FileHeader `json:"avatar" form:"avatar"`
 	}
 )
