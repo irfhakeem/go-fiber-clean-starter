@@ -11,14 +11,14 @@ import (
 	"github.com/irfhakeem/go-fiber-clean-starter/dto"
 )
 
-func Uploads(file multipart.FileHeader, path string) (string, error) {
+func Uploads(file multipart.FileHeader, path string) error {
 	parts := strings.Split(path, "/")
 	fileID := parts[1]
 	dirPath := fmt.Sprintf("%s/%s", "uploads", parts[0])
 
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(dirPath, 0777); err != nil {
-			return "", err
+			return err
 		}
 	}
 
@@ -26,7 +26,7 @@ func Uploads(file multipart.FileHeader, path string) (string, error) {
 
 	uploadedFile, err := file.Open()
 	if err != nil {
-		return "", err
+		return err
 
 	}
 	defer uploadedFile.Close()
@@ -44,25 +44,25 @@ func Uploads(file multipart.FileHeader, path string) (string, error) {
 	if extensions[extension] {
 		maxSize = 2 * 1024 * 1024
 	} else {
-		return "", dto.ErrUnsupportedFileType
+		return dto.ErrUnsupportedFileType
 	}
 
 	if file.Size > maxSize {
-		return "", dto.ErrUnsupportedFileType
+		return dto.ErrFileTooLarge
 	}
 
 	targetFile, err := os.Create(filePath)
 	if err != nil {
-		return "", err
+		return err
 
 	}
 	defer targetFile.Close()
 
 	_, err = io.Copy(targetFile, uploadedFile)
 	if err != nil {
-		return "", err
+		return err
 
 	}
 
-	return filePath, nil
+	return nil
 }

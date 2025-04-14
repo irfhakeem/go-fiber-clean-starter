@@ -47,7 +47,7 @@ func (c *userController) Me(ctx *fiber.Ctx) error {
 
 	user, err := c.us.FindUserByID(ctx.Context(), userID)
 	if err != nil {
-		ctx.Status(fiber.StatusBadRequest).JSON(
+		return ctx.Status(fiber.StatusBadRequest).JSON(
 			utils.FailedResponse(dto.FAILED_GET_USER_BY_ID, err.Error()),
 		)
 	}
@@ -67,7 +67,7 @@ func (c *userController) FindAllUsers(ctx *fiber.Ctx) error {
 
 	users, err := c.us.FindAllUsers(ctx.Context(), req)
 	if err != nil {
-		ctx.Status(fiber.StatusBadRequest).JSON(
+		return ctx.Status(fiber.StatusBadRequest).JSON(
 			utils.FailedResponse(dto.FAILED_GET_ALL_USERS, err.Error()),
 		)
 	}
@@ -93,7 +93,7 @@ func (c *userController) FindUserByID(ctx *fiber.Ctx) error {
 
 	user, err := c.us.FindUserByID(ctx.Context(), userID)
 	if err != nil {
-		ctx.Status(fiber.StatusBadRequest).JSON(
+		return ctx.Status(fiber.StatusBadRequest).JSON(
 			utils.FailedResponse(dto.FAILED_GET_USER_BY_ID, err.Error()),
 		)
 	}
@@ -113,7 +113,7 @@ func (c *userController) CreateUser(ctx *fiber.Ctx) error {
 
 	user, err := c.us.CreateUser(ctx.Context(), req)
 	if err != nil {
-		ctx.Status(fiber.StatusBadRequest).JSON(
+		return ctx.Status(fiber.StatusBadRequest).JSON(
 			utils.FailedResponse(dto.FAILED_CREATE_USER, err.Error()),
 		)
 	}
@@ -139,9 +139,14 @@ func (c *userController) UpdateUser(ctx *fiber.Ctx) error {
 		)
 	}
 
+	file, err := ctx.FormFile("avatar")
+	if err == nil && file != nil {
+		req.Avatar = file
+	}
+
 	user, err := c.us.UpdateUser(ctx.Context(), req, userID)
 	if err != nil {
-		ctx.Status(fiber.StatusBadRequest).JSON(
+		return ctx.Status(fiber.StatusBadRequest).JSON(
 			utils.FailedResponse(dto.FAILED_UPDATE_USER, err.Error()),
 		)
 	}
@@ -162,7 +167,7 @@ func (c *userController) DeleteUser(ctx *fiber.Ctx) error {
 
 	err = c.us.DeleteUser(ctx.Context(), userID)
 	if err != nil {
-		ctx.Status(fiber.StatusBadRequest).JSON(
+		return ctx.Status(fiber.StatusBadRequest).JSON(
 			utils.FailedResponse(dto.FAILED_DELETE_USER, err.Error()),
 		)
 	}

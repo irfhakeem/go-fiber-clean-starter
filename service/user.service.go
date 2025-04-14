@@ -2,6 +2,9 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/irfhakeem/go-fiber-clean-starter/dto"
 	"github.com/irfhakeem/go-fiber-clean-starter/entity"
@@ -82,36 +85,49 @@ func (s *userService) CreateUser(ctx context.Context, req dto.UserCreateRequest)
 }
 
 func (s *userService) UpdateUser(ctx context.Context, req dto.UserUpdateRequest, id int64) (dto.UserResponse, error) {
+	user, err := s.us.FindByID(ctx, nil, id)
+	if err != nil {
+		return dto.UserResponse{}, dto.ErrUserNotFound
+	}
+
+	if req.Name != "" {
+		user.Name = req.Name
+	}
+	if req.Email != "" {
+		user.Email = req.Email
+	}
+	if req.Gender != "" {
+		user.Gender = req.Gender
+	}
+
 	if req.Password != "" {
 		hashedPassword, err := utils.HashPassword(req.Password)
 		if err != nil {
 			return dto.UserResponse{}, err
 		}
-		req.Password = hashedPassword
+		user.Password = hashedPassword
 	}
 
-	var avatarPath string
 	if req.Avatar != nil {
-		avatar, err := utils.Uploads(*req.Avatar, "/avatar")
-		if err != nil {
+		fileName := fmt.Sprintf(
+			"%s/%s-%s",
+			"avatar",
+			strconv.FormatInt(user.ID, 10),
+			strings.ReplaceAll(req.Avatar.Filename, " ", "-"),
+		)
+
+		if err := utils.Uploads(*req.Avatar, fileName); err != nil {
 			return dto.UserResponse{}, err
 		}
-		avatarPath = avatar
+		user.Avatar = fileName
 	}
 
-	user, err := s.us.Update(ctx, nil, &entity.User{
-		ID:       id,
-		Email:    req.Email,
-		Name:     req.Name,
-		Password: req.Password,
-		Gender:   req.Gender,
-		Avatar:   avatarPath,
-	})
+	updatedUser, err := s.us.Update(ctx, nil, user)
 	if err != nil {
-		return dto.UserResponse{}, err
+		return dto.UserResponse{}, dto.ErrUpdateUser
 	}
 
-	return formatUserResponse(user), nil
+	return formatUserResponse(updatedUser), nil
 }
 
 func (s *userService) DeleteUser(ctx context.Context, id int64) error {
