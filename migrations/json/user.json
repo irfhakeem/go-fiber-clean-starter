@@ -4,6 +4,7 @@
     "password": "Admin123",
     "name": "Admin",
     "gender": "Prefer Not To Say",
-    "role": "Admin"
+    "role": "Admin",
+    "is_verified": true
   }
 ]

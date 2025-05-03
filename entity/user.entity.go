@@ -10,13 +10,14 @@ import (
 )
 
 type User struct {
-	ID       int64              `json:"id"       gorm:"primaryKey;type:bigint;autoIncrement"`
-	Email    string             `json:"email"    gorm:"varchar(255);unique;not null"`
-	Password string             `json:"password" gorm:"varchar(255);not null"`
-	Name     string             `json:"name"     gorm:"varchar(255);not null"`
-	Gender   constants.Gender   `json:"gender"   gorm:"gender;"`
-	Role     constants.UserRole `json:"role"     gorm:"user_role;default:member"`
-	Avatar   string             `json:"avatar"   gorm:"varchar(255);default:null"`
+	ID         int64              `json:"id"       gorm:"primaryKey;type:bigint;autoIncrement"`
+	Email      string             `json:"email"    gorm:"varchar(255);unique;not null"`
+	Password   string             `json:"password" gorm:"varchar(255);not null"`
+	Name       string             `json:"name"     gorm:"varchar(255);not null"`
+	Gender     constants.Gender   `json:"gender"   gorm:"gender;"`
+	Role       constants.UserRole `json:"role"     gorm:"user_role;default:member"`
+	Avatar     string             `json:"avatar"   gorm:"varchar(255);default:null"`
+	IsVerified bool               `json:"is_verified" gorm:"default:false"`
 
 	TimeStamps
 }
