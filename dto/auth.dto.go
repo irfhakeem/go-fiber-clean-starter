@@ -10,9 +10,11 @@ const (
 	FAILED_TOKEN_EXPIRED   = "token expired"
 	FAILED_REGISTER_USER   = "failed to register user"
 	FAILED_LOGIN_USER      = "failed to login user"
+	FAILED_VERIFY_USER     = "failed to verify user"
 
 	SUCCESS_REGISTER_USER = "success to register user"
 	SUCCESS_LOGIN_USER    = "success to login user"
+	SUCCESS_VERIFY_USER   = "success to verify user"
 )
 
 var (
@@ -24,6 +26,8 @@ var (
 	ErrEmailAlreadyExists = errors.New("email already exists")
 	ErrEmailNotFound      = errors.New("email not found")
 	ErrPasswordWeak       = errors.New("password must contain at least one uppercase letter and one number")
+	ErrTokenExpired       = errors.New("token expired")
+	ErrTokenInvalid       = errors.New("token invalid")
 )
 
 type (
@@ -40,5 +44,9 @@ type (
 
 	LoginResponse struct {
 		AccessToken string `json:"access_token"`
+	}
+
+	VerifyRequest struct {
+		Token string `json:"token" form:"token"`
 	}
 )

@@ -13,4 +13,5 @@ func Auth(
 
 	routes.Post("/register", c.Register)
 	routes.Post("/login", c.Login)
+	routes.Post("/verify", c.Verify)
 }

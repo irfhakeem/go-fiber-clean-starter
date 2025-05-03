@@ -8,13 +8,19 @@ import (
 	"github.com/irfhakeem/go-fiber-clean-starter/controller"
 	"github.com/irfhakeem/go-fiber-clean-starter/entity"
 	"github.com/irfhakeem/go-fiber-clean-starter/helpers/command"
+	"github.com/irfhakeem/go-fiber-clean-starter/helpers/utils"
 	"github.com/irfhakeem/go-fiber-clean-starter/middleware"
+	"github.com/irfhakeem/go-fiber-clean-starter/rabbitmq"
 	"github.com/irfhakeem/go-fiber-clean-starter/repository"
 	"github.com/irfhakeem/go-fiber-clean-starter/routes"
 	"github.com/irfhakeem/go-fiber-clean-starter/service"
 	"gorm.io/gorm"
 
 	"github.com/gofiber/fiber/v2"
+)
+
+const (
+	RabbitMQURL = "amqp://guest:guest@localhost:5672/"
 )
 
 func args(db *gorm.DB) bool {
@@ -36,8 +42,21 @@ func main() {
 		return
 	}
 
+	conn, ch := rabbitmq.InitRabbitMQ()
+	defer config.CloseConnectionRabbitMQ(conn, ch)
+
+	go rabbitmq.ConsumeAll()
+
 	app := fiber.New()
 	app.Use(middleware.Cors())
+
+	// Health Check
+	app.Get("/health", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).JSON(utils.Response{
+			Status:  true,
+			Message: "Server is healthy",
+		})
+	})
 
 	// Dependency Injection (Service, Repository, Controller)
 	jwtService := service.NewJwtService()

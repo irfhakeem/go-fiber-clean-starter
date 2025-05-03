@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/irfhakeem/go-fiber-clean-starter/dto"
@@ -14,6 +16,7 @@ type (
 	AuthService interface {
 		Register(ctx context.Context, req dto.RegisterRequest) (dto.UserResponse, error)
 		Login(ctx context.Context, req dto.LoginRequest) (dto.LoginResponse, error)
+		Verify(ctx context.Context, req dto.VerifyRequest) error
 	}
 
 	authService struct {
@@ -38,6 +41,19 @@ func (s *authService) Register(ctx context.Context, req dto.RegisterRequest) (dt
 
 	user, err := s.us.Create(ctx, nil, &data)
 	if err != nil {
+		return dto.UserResponse{}, err
+	}
+
+	txt := fmt.Sprintf("%s_%s", user.Email, time.Now().Add(time.Minute*5).Format("2006-01-02 15:04:05"))
+
+	token, err := utils.GetAESEncrypted(txt)
+	if err != nil {
+		return dto.UserResponse{}, err
+	}
+
+	link := fmt.Sprintf("http://localhost:8080/verify?token=%s", token)
+
+	if err := SendVerificationEmail(ctx, user.Email, link); err != nil {
 		return dto.UserResponse{}, err
 	}
 
@@ -69,4 +85,41 @@ func (s *authService) Login(ctx context.Context, req dto.LoginRequest) (dto.Logi
 	return dto.LoginResponse{
 		AccessToken: accToken,
 	}, nil
+}
+
+func (s *authService) Verify(ctx context.Context, req dto.VerifyRequest) error {
+	txt, err := utils.GetAESDecrypted(req.Token)
+	if err != nil {
+		return err
+	}
+
+	parts := strings.Split(string(txt), "_")
+	if len(parts) < 2 {
+		return dto.ErrTokenInvalid
+	}
+
+	email := parts[0]
+	expiredAt, err := time.Parse("2006-01-02 15:04:05", parts[1])
+	if err != nil {
+		return err
+	}
+
+	if time.Now().After(expiredAt) {
+		return dto.ErrTokenExpired
+	}
+
+	user, err := s.us.FindFirst(ctx, nil, "email = ?", email)
+	if err != nil {
+		return dto.ErrUserNotFound
+	}
+
+	_, err = s.us.Update(ctx, nil, &entity.User{
+		ID:         user.ID,
+		IsVerified: true,
+	})
+	if err != nil {
+		return dto.ErrUpdateUser
+	}
+
+	return nil
 }
