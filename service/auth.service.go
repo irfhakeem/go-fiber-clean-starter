@@ -62,11 +62,7 @@ func (s *authService) Register(ctx context.Context, req dto.RegisterRequest) (dt
 
 func (s *authService) Login(ctx context.Context, req dto.LoginRequest) (dto.LoginResponse, error) {
 	user, err := s.us.FindFirst(ctx, nil, "email = ?", req.Email)
-	if err != nil {
-		return dto.LoginResponse{}, err
-	}
-
-	if user == nil {
+	if user == nil || err != nil {
 		return dto.LoginResponse{}, dto.ErrUserNotFound
 	}
 

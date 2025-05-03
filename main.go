@@ -17,10 +17,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/gofiber/fiber/v2"
-)
-
-const (
-	RabbitMQURL = "amqp://guest:guest@localhost:5672/"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func args(db *gorm.DB) bool {
@@ -48,6 +45,9 @@ func main() {
 	go rabbitmq.ConsumeAll()
 
 	app := fiber.New()
+	app.Use(logger.New(logger.Config{
+		Format: "${time} | ${status} | ${method} | ${path} | ${latency}\n",
+	}))
 	app.Use(middleware.Cors())
 
 	// Health Check
