@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -32,6 +33,16 @@ func NewAuthService(jwt JWTService, us repository.IBaseRepository[entity.User]) 
 	}
 }
 
+var (
+	app_url = os.Getenv("APP_URL")
+)
+
+func init() {
+	if app_url == "" {
+		app_url = "http://localhost:8000"
+	}
+}
+
 func (s *authService) Register(ctx context.Context, req dto.RegisterRequest) (dto.UserResponse, error) {
 	data := entity.User{
 		Email:    req.Email,
@@ -51,7 +62,7 @@ func (s *authService) Register(ctx context.Context, req dto.RegisterRequest) (dt
 		return dto.UserResponse{}, err
 	}
 
-	link := fmt.Sprintf("http://localhost:8080/verify?token=%s", token)
+	link := fmt.Sprintf("%s/verify?token=%s", app_url, token)
 
 	if err := SendVerificationEmail(ctx, user.Email, link); err != nil {
 		return dto.UserResponse{}, err
@@ -73,7 +84,7 @@ func (s *authService) Login(ctx context.Context, req dto.LoginRequest) (dto.Logi
 	accToken, err := s.jwt.GenerateToken(dto.JWTPayload{
 		UserId: user.ID,
 		Role:   user.Role,
-	}, time.Now().Add(time.Hour*7))
+	}, time.Now().Add(time.Hour*1))
 	if err != nil {
 		return dto.LoginResponse{}, dto.ErrGenerateToken
 	}
