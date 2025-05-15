@@ -1,11 +1,11 @@
 root = "."
 testdata_dir = "tests"
-tmp_dir = "/tmp"
+tmp_dir = "docker/air/tmp"
 
 [build]
   args_bin = []
-  bin = "tmp\\main.exe"
-  cmd = "go build -o ./tmp/main.exe ."
+  bin = "docker/air/tmp/main"
+  cmd = "go build -o docker/air/tmp/main ."
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "tests"]
   exclude_file = []

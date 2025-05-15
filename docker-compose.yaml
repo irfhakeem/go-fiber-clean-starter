@@ -1,0 +1,69 @@
+version: "3.8"
+services:
+  # Go Fiber
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${GOLANG_PORT:-8080}:8080"
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - app_network
+
+  # Postgres
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - app_data:/var/lib/postgresql/data
+
+  # RabbitMQ
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app_network
+    restart: always
+
+  # Nginx
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    ports:
+      - "${NGINX_PORT:-81}:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - .:/var/www/html
+    depends_on:
+      - app
+    networks:
+      - app_network
+    restart: always
+
+volumes:
+  app_data:
+  rabbitmq_data:
+
+networks:
+  app_network:
+    driver: bridge
