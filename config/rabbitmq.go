@@ -4,18 +4,29 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/streadway/amqp"
 )
 
+type RabbitMQConfig struct {
+	Username string
+	Password string
+}
+
 func ConnectRabbitMQ() (*amqp.Connection, *amqp.Channel) {
-	url := os.Getenv("RABBITMQ_URL")
-	if url == "" {
-		url = "amqp://guest:guest@localhost:5672/"
+	if os.Getenv("APP_ENV") != "production" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatalf("Error loading .env file: %v", err)
+		}
 	}
 
-	log.Printf("Connecting to RabbitMQ at %s", url)
+	rabbitURL := os.Getenv("RABBITMQ_URL")
+	if rabbitURL == "" {
+		log.Fatal("RABBITMQ_URL is not set")
+	}
 
-	conn, err := amqp.Dial(url)
+	conn, err := amqp.Dial(rabbitURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
 	}
